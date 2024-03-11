@@ -28,6 +28,9 @@ async function run() {
     const db = client.db("PDCH-server");
     const userCollection = db.collection("users");
     const suppliesCollection = db.collection("supplies");
+    const communityWallCollection = db.collection("communityGratitude");
+    const testimonialCollection = db.collection("testimonial");
+    const volunteerCollection = db.collection("volunteer");
 
     // User Registration
     app.post("/api/v1/register", async (req, res) => {
@@ -71,13 +74,9 @@ async function run() {
       }
 
       // Generate JWT token
-      const token = jwt.sign(
-        { email: user.email, name: user.name },
-        process.env.JWT_SECRET,
-        {
-          expiresIn: process.env.EXPIRES_IN,
-        }
-      );
+      const token = jwt.sign({ email: user.email, name: user.name }, process.env.JWT_SECRET, {
+        expiresIn: process.env.EXPIRES_IN,
+      });
 
       res.json({
         success: true,
@@ -132,6 +131,63 @@ async function run() {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const result = await suppliesCollection.deleteOne(filter);
+      res.send(result);
+    });
+
+    // ==============================================================
+    // Community Gratitude wall
+
+    app.get("/api/v1/community", async (req, res) => {
+      const result = await communityWallCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/api/v1/community", async (req, res) => {
+      const doc = req.body;
+      const result = await communityWallCollection.insertOne(doc);
+      res.send(result);
+    });
+    // ==============================================================
+    // Testimonial post
+
+    app.get("/api/v1/testimonial", async (req, res) => {
+      const result = await testimonialCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/api/v1/testimonial", async (req, res) => {
+      const doc = req.body;
+
+      const { email } = doc;
+      const existingUser = await testimonialCollection.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: "User already post testimonial",
+        });
+      }
+      const result = await testimonialCollection.insertOne(doc);
+      res.send(result);
+    });
+
+    // volunteer post
+
+    app.get("/api/v1/volunteer", async (req, res) => {
+      const result = await volunteerCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/api/v1/volunteer", async (req, res) => {
+      const doc = req.body;
+      const { email } = doc;
+      const existingUser = await volunteerCollection.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: "User already applied for Volunteer",
+        });
+      }
+      const result = await volunteerCollection.insertOne(doc);
       res.send(result);
     });
 
