@@ -137,12 +137,12 @@ async function run() {
     // ==============================================================
     // Community Gratitude wall
 
-    app.get("/api/v1/community", async (req, res) => {
+    app.get("/api/v1/community-gratitude", async (req, res) => {
       const result = await communityWallCollection.find().toArray();
       res.send(result);
     });
 
-    app.post("/api/v1/community", async (req, res) => {
+    app.post("/api/v1/community-gratitude", async (req, res) => {
       const doc = req.body;
       const result = await communityWallCollection.insertOne(doc);
       res.send(result);
