@@ -144,6 +144,16 @@ async function run() {
 
     app.post("/api/v1/community-gratitude", async (req, res) => {
       const doc = req.body;
+
+      const { email } = doc;
+      const existingUser = await communityWallCollection.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: "User already posted to the Community Gratitude Wall",
+        });
+      }
+
       const result = await communityWallCollection.insertOne(doc);
       res.send(result);
     });
@@ -163,13 +173,14 @@ async function run() {
       if (existingUser) {
         return res.status(400).json({
           success: false,
-          message: "User already post testimonial",
+          message: "User already posted testimonial",
         });
       }
       const result = await testimonialCollection.insertOne(doc);
       res.send(result);
     });
 
+    // ==============================================================
     // volunteer post
 
     app.get("/api/v1/volunteer", async (req, res) => {
@@ -191,6 +202,7 @@ async function run() {
       res.send(result);
     });
 
+    // ==============================================================
     // Start the server
     app.listen(port, () => {
       console.log(`Server is running on http://localhost:${port}`);
